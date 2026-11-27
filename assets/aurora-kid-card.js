@@ -156,6 +156,15 @@ class AuroraKidCard extends HTMLElement {
       R.querySelectorAll('.c[data-k]').forEach((b) => { b.onclick = () => { const a = h.states[te].attributes, k = Math.max(a.min_color_temp_kelvin || 2000, Math.min(a.max_color_temp_kelvin || 6500, +b.dataset.k)); h.callService('light', 'turn_on', {entity_id: te, color_temp_kelvin: k, brightness_pct: parseInt(br.value, 10)}); }; });
     }
     R.querySelectorAll('button.dv').forEach((b) => { b.onclick = () => h.callService('homeassistant', 'toggle', {entity_id: b.dataset.d}); });
+    this._menuSpot(R);
+  }
+  /* ukryta opcja dla rodzica: nieoznaczony rog (lewy gorny) - 5 szybkich dotkniec wysuwa boczne menu HA (belka jest ukryta, dziecko jej nie ma);
+     konfiguracja: menu_taps (domyslnie 5, 0 = wylaczone) */
+  _menuSpot(R) {
+    const n = this._c && this._c.menu_taps != null ? +this._c.menu_taps : 5; if (!n) return;
+    const sp = document.createElement('div'); sp.setAttribute('style', 'position:fixed;left:0;top:0;width:64px;height:64px;z-index:50;-webkit-tap-highlight-color:transparent');
+    sp.onclick = () => { const t = Date.now(); this._mt = (this._mt || []).filter((x) => t - x < 3500); this._mt.push(t); if (this._mt.length >= n) { this._mt = []; this.dispatchEvent(new CustomEvent('hass-toggle-menu', {bubbles: true, composed: true})); } };
+    R.appendChild(sp);
   }
   _tap(b) {
     const e = b.dataset.e, u = b.dataset.u, was = b.dataset.p === '1', it = (this._items[e] || []).find((x) => x.uid === u); if (!it) return;
