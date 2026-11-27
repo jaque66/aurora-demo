@@ -1,5 +1,7 @@
 # Aurora – interaktywne demo / interactive demo
 
+**▶ Demo online / Live demo: https://jaque66.github.io/aurora-demo/**
+
 **PL** – Interaktywne demo projektu **Aurora**: dashboardu *Aurora Pulse* dla Home Assistanta, widoków dla dzieci (z akceptacją zadań przez rodzica) oraz aplikacji rodzicielskiej *Aurora Guard*. Demo działa w całości w przeglądarce, na **sztucznym domu** (rodzina Ola i Kuba, wymyślone urządzenia i współrzędne) – nie łączy się z żadnym prawdziwym Home Assistantem i nie wysyła żadnych danych.
 
 **EN** – Interactive demo of the **Aurora** project: the *Aurora Pulse* dashboard for Home Assistant, kids' dashboards (tasks with parent approval) and the *Aurora Guard* parental-control app. It runs entirely in the browser on a **made-up home** (a fictional family, invented devices and coordinates). It does not connect to a real Home Assistant and sends no data anywhere.
