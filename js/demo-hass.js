@@ -40,7 +40,7 @@
   function seed() {
     const R = [
       ['salon', 'Salon', 22.4, 46, 180, 'on'], ['kuchnia', 'Kuchnia', 23.1, 52, 240, 'off'], ['ola', 'Ola', 21.8, 48, 90, 'on'],
-      ['kuba', 'Kuba', 22.0, 50, 70, 'off'], ['lazienka', 'Łazienka', 24.6, 63, 20, 'off'], ['przedpokoj', 'Przedpokój', 21.2, 44, 35, 'off']];
+      ['kuba', 'Kuba', 22.0, 50, 70, 'off'], ['lazienka', 'Łazienka', 24.1, 52, 20, 'off'], ['przedpokoj', 'Przedpokój', 21.2, 44, 35, 'off']];
     R.forEach((r) => {
       E('sensor.demo_' + r[0] + '_t', r[2], 'Temperatura ' + r[1], {unit_of_measurement: '°C', device_class: 'temperature', state_class: 'measurement'});
       E('sensor.demo_' + r[0] + '_h', r[3], 'Wilgotność ' + r[1], {unit_of_measurement: '%', device_class: 'humidity', state_class: 'measurement'});
@@ -58,8 +58,9 @@
     E('sensor.demo_out_t', 11.8, 'Temperatura na zewnątrz', {unit_of_measurement: '°C', device_class: 'temperature'});
     E('sensor.demo_out_h', 71, 'Wilgotność na zewnątrz', {unit_of_measurement: '%', device_class: 'humidity'});
     E('weather.demo_pogoda', 'partlycloudy', 'Pogoda', {temperature: 12, humidity: 71, wind_speed: 14, pressure: 1014, apparent_temperature: 10, cloud_coverage: 55, temperature_unit: '°C'});
-    E('sensor.demo_pm25', 14, 'PM2.5', {unit_of_measurement: 'µg/m³', device_class: 'pm25'}); E('fan.demo_oczyszczacz', 'on', 'Oczyszczacz powietrza');
-    E('sensor.demo_bat_drzwi', 18, 'Czujnik drzwi', {unit_of_measurement: '%', device_class: 'battery'});
+    E('binary_sensor.demo_gas', 'off', 'Czujnik gazu', {device_class: 'gas'}); E('binary_sensor.demo_flood', 'off', 'Czujnik zalania kuchni', {device_class: 'moisture'}); E('select.demo_alarm', 'normal', 'Alarm');
+    E('sensor.demo_pm25', 6, 'PM2.5', {unit_of_measurement: 'µg/m³', device_class: 'pm25'}); E('fan.demo_oczyszczacz', 'on', 'Oczyszczacz powietrza');
+    E('sensor.demo_bat_drzwi', 83, 'Czujnik drzwi', {unit_of_measurement: '%', device_class: 'battery'});
     E('sensor.demo_bat_okno', 64, 'Czujnik okna', {unit_of_measurement: '%', device_class: 'battery'});
     E('calendar.demo_rodzina', 'off', 'Kalendarz rodzinny', {friendly_name: 'Kalendarz rodzinny'});
     E('sun.sun', new Date().getHours() >= 7 && new Date().getHours() < 18 ? 'above_horizon' : 'below_horizon', 'Słońce');
@@ -179,11 +180,23 @@
     else if (m.t === 'reset') location.reload();
   };
 
+  /* scenariusze: stan domu do podgladu dashboardu w roznych warunkach (ok / uwaga / alarm) */
+  let SCN = 'ok';
+  function scenario(name) {
+    SCN = name = (['ok', 'warn', 'alarm'].indexOf(name) >= 0 ? name : 'ok');
+    const w = name !== 'ok', a = name === 'alarm', S = (id, v, at) => setState(id, v, at || {});
+    S('sensor.demo_bat_drzwi', w ? 9 : 83); S('sensor.demo_bat_okno', w ? 12 : 64);
+    S('sensor.demo_kuchnia_h', w ? 74 : 52); S('sensor.demo_ola_t', w ? 16.4 : 21.8); S('sensor.demo_pm25', w ? 44 : 6);
+    S('binary_sensor.demo_door', w ? 'on' : 'off');
+    S('binary_sensor.demo_gas', a ? 'on' : 'off'); S('binary_sensor.demo_flood', a ? 'on' : 'off'); S('select.demo_alarm', a ? 'alarm_sound_light' : 'normal');
+    schedule();
+  }
   seed();
   setInterval(drift, 20000);
   window.AuroraDemo = {
     hass: snapshot, setUser: (u) => { user = Object.assign({name: 'Rodzic', is_admin: false, id: 'u'}, u); },
     onHass: (fn) => { listeners.add(fn); return () => listeners.delete(fn); }, state: (id) => ST[id], set: setState, call: callService, todo: (e) => clone(TODO[e] || []),
+    scenario: scenario, scenarioName: () => SCN,
     resetAll: () => { if (CH) CH.postMessage({t: 'reset', from: ID}); location.reload(); }
   };
 })();

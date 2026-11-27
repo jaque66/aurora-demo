@@ -44,11 +44,13 @@
     const b = document.getElementById('boot'); if (b) b.remove(); document.body.appendChild(el);
     P('4 hass'); el.hass = AuroraDemo.hass(); P('5 po hass'); window.card = el;
   };
+  if (q.get('scn')) AuroraDemo.scenario(q.get('scn'));
   make();
   AuroraDemo.onHass((h) => { if (el) el.hass = h; });
   if (isPulse && q.get('open')) setTimeout(() => { try { el._pOpen(q.get('open')); } catch (e) { /* ignore */ } }, 900);
   window.addEventListener('message', (e) => {
     const d = e.data || {};
+    if (d.scenario && window.AuroraDemo) { AuroraDemo.scenario(d.scenario); return; }
     if (d.modules && v === 'modules') { mods = d.modules; make(); return; }
     if (d.theme !== undefined && el && el._pRender) { try { if (d.theme) localStorage.setItem('pulse_theme', d.theme); else localStorage.removeItem('pulse_theme'); el._fxK = ''; el._pRender(); el._pVRender(true); } catch (x) { /* ignore */ } }
     if (d.open && el && el._pOpen) { try { el._pOpen(d.open); } catch (x) { /* ignore */ } }
