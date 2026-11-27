@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aurora Guard – telefon dziecka (demo)</title>
+<style>
+  :root { --a: #00e5ff; --b: #b36bff; --c: #ff5fb0; --ink: #eaf1ff; --ink2: #9fb0d0; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #070a16; color: var(--ink); font: 15px/1.35 system-ui, 'Segoe UI', Roboto, sans-serif; }
+  #ph { position: fixed; inset: 0; background: radial-gradient(500px 420px at 20% 0%, rgba(120,70,255,.45), transparent 65%), radial-gradient(420px 420px at 100% 100%, rgba(0,200,255,.28), transparent 60%), linear-gradient(180deg, #14122e, #0a0d1f); }
+  #sb { display: flex; justify-content: space-between; padding: 10px 18px 0; font-size: 12px; opacity: .9; }
+  #clk { text-align: center; margin-top: 34px; } #clk b { display: block; font-size: 62px; font-weight: 200; letter-spacing: -.02em; } #clk small { color: var(--ink2); }
+  #grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px 8px; padding: 34px 22px; }
+  .app { display: flex; flex-direction: column; align-items: center; gap: 6px; background: none; border: 0; color: inherit; font: inherit; font-size: 12px; cursor: pointer; }
+  .app i { width: 58px; height: 58px; border-radius: 18px; display: grid; place-items: center; font-style: normal; font-size: 28px; box-shadow: 0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.3); } .app:active i { transform: scale(.92); }
+  .ov { position: fixed; inset: 0; z-index: 10; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 28px; text-align: center; background: radial-gradient(400px 400px at 50% 20%, rgba(120,70,255,.5), transparent 60%), linear-gradient(180deg, #151236, #0a0d1f); }
+  .ov.on { display: flex; animation: fin .25s; } @keyframes fin { from { opacity: 0; transform: scale(.97); } }
+  .ic { width: 96px; height: 96px; border-radius: 50%; display: grid; place-items: center; font-size: 44px; background: linear-gradient(135deg, var(--a), var(--b), var(--c)); box-shadow: 0 0 40px rgba(179,107,255,.5); }
+  .ov h2 { margin: 6px 0 0; font-size: 24px; font-weight: 400; } .ov .tag { color: var(--a); letter-spacing: .2em; font-size: 12px; text-transform: uppercase; } .ov p { margin: 6px 0 14px; color: var(--ink2); max-width: 280px; }
+  .btn { width: 230px; padding: 13px; border-radius: 16px; border: 0; font: inherit; font-weight: 600; color: #0a0d1f; background: linear-gradient(90deg, var(--a), #8be9ff); cursor: pointer; } .btn.sec { background: rgba(255,255,255,.1); color: var(--ink); border: 1px solid rgba(255,255,255,.18); font-weight: 500; } .btn[disabled] { opacity: .6; }
+  #run { background: #0e1330; } #run .bar { width: 240px; height: 10px; border-radius: 6px; background: rgba(255,255,255,.12); overflow: hidden; } #run .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--a), var(--c)); }
+  #ring .ic { animation: ring .5s infinite alternate; } @keyframes ring { from { transform: rotate(-14deg); } to { transform: rotate(14deg); } }
+  #toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 30; background: rgba(0,0,0,.75); border: 1px solid rgba(255,255,255,.15); padding: 9px 16px; border-radius: 14px; font-size: 13px; opacity: 0; transition: opacity .3s; pointer-events: none; } #toast.on { opacity: 1; }
+  #note { position: absolute; left: 14px; right: 14px; bottom: 16px; padding: 10px 14px; border-radius: 16px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); font-size: 12px; color: var(--ink2); display: flex; gap: 10px; align-items: center; }
+  #note b { color: var(--ink); font-weight: 500; }
+</style></head>
+<body>
+<div id="ph">
+  <div id="sb"><span id="sbt">12:00</span><span>▲ ▮▮▮ 🔋 <span id="sbb">76</span>%</span></div>
+  <div id="clk"><b id="clkb">12:00</b><small id="clkd"></small></div>
+  <div id="grid"></div>
+  <div id="note"><span style="font-size:18px">🛡️</span><span><b>Aurora Guard działa</b><br><span id="nt">Blokady zarządzane przez rodzica</span></span></div>
+</div>
+<div class="ov" id="blk"><div class="ic">🔒</div><div class="tag">zablokowana</div><h2 id="blkT">Aplikacja</h2><p id="blkM"></p><button class="btn" id="blkOk">OK</button><button class="btn sec" id="blkReq">Poproś o więcej czasu</button></div>
+<div class="ov" id="run"><div class="ic" id="runI">🎮</div><h2 id="runT">Aplikacja</h2><p id="runM"></p><div class="bar"><i id="runB" style="width:0"></i></div><p style="font-size:12px">Czas w demo biegnie 1 s = 1 min</p><button class="btn sec" id="runX">Zamknij aplikację</button></div>
+<div class="ov" id="full"><div class="ic">🌙</div><h2>Telefon zablokowany</h2><p id="fullM">Czas na odpoczynek. Poproś rodzica, jeśli coś jest potrzebne.</p><div id="fullA" style="display:flex;flex-direction:column;gap:10px"></div><button class="btn sec" id="fullReq" style="margin-top:6px">Poproś o więcej czasu</button></div>
+<div class="ov" id="msg"><div class="ic">💬</div><div class="tag">wiadomość od rodzica</div><h2 id="msgT" style="font-size:26px"></h2><button class="btn" id="msgOk">OK</button></div>
+<div class="ov" id="ring"><div class="ic">🔔</div><h2>Rodzic szuka tego telefonu</h2><p>Alarm gra nawet w trybie cichym.</p><button class="btn" id="ringOk">Wycisz</button></div>
+<div id="toast"></div>
+<script src="js/mdi-bundle.js"></script>
+<script src="js/demo-hass.js"></script>
+<script>
+(function () {
+  const q = new URLSearchParams(location.search), kid = q.get('kid') || 'ola', D = window.AuroraDemo, $ = (id) => document.getElementById(id);
+  const APPS = [['demo.game', 'GameZone', '🎮', '#6b46ff'], ['demo.video', 'VideoTube', '▶️', '#ff3d6e'], ['demo.chat', 'ChatApp', '💬', '#19c37d'], ['demo.school', 'Zeszyt', '📘', '#2f7bff'], ['demo.calc', 'Kalkulator', '🧮', '#ff9f1c'], ['demo.music', 'Muzyka', '🎵', '#d046ff']];
+  const st = (id) => (D.state(id) || {state: '', attributes: {}}), n = (id) => parseFloat(st(id).state) || 0;
+  const items = (e) => D.todo(e).filter((x) => x.status === 'needs_action').map((x) => x.summary.split('|'));
+  const used = {}; let cur = null, tick = null, lastMsg = '', lastRing = '';
+  function two(x) { return String(x).padStart(2, '0'); }
+  function clock() { const d = new Date(); $('sbt').textContent = $('clkb').textContent = two(d.getHours()) + ':' + two(d.getMinutes()); $('clkd').textContent = d.toLocaleDateString('pl-PL', {weekday: 'long', day: 'numeric', month: 'long'}); $('sbb').textContent = st('sensor.aurora_guard_' + kid + '_status').attributes.battery || 76; }
+  setInterval(clock, 5000); clock();
+  APPS.forEach((a) => { const b = document.createElement('button'); b.className = 'app'; b.innerHTML = '<i style="background:' + a[3] + '">' + a[2] + '</i>' + a[1]; b.onclick = () => open(a); $('grid').appendChild(b); });
+  function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2600); }
+  function rules() {
+    const lock = st('input_boolean.blokada_telefon_' + kid).state === 'on', blk = {}, lim = {};
+    items('todo.guard_' + kid).forEach((q) => { const m = parseInt(q[2], 10); if (m > 0) lim[q[0]] = m; else blk[q[0]] = 1; });
+    return {lock, blk, lim, full: st('input_boolean.blokada_telefon_' + kid + '_caly').state === 'on', bonus: n('input_number.guard_bonus_' + kid)};
+  }
+  function usedOf(a) { if (used[a[0]] == null) { const u = (st('sensor.aurora_guard_' + kid + '_usage').attributes.apps || []).find((x) => x.n === a[1]); used[a[0]] = u ? u.m : 0; } return used[a[0]]; }
+  function show(id, on) { $(id).classList.toggle('on', !!on); }
+  function request(app, reason) {
+    D.set('input_text.guard_prosba_' + kid, Math.floor(Date.now() / 1000) + '|' + (app ? app[1] : 'Telefon') + '|' + (app ? app[0] : '') + '|' + reason);
+    D.set('counter.guard_prosby_' + kid, n('counter.guard_prosby_' + kid) + 1); toast('Wysłano prośbę do rodzica ✔');
+  }
+  function open(a) {
+    const r = rules(); cur = a;
+    if (r.full) return fullScreen();
+    if (r.lock && r.blk[a[0]]) return blocked(a, 'Rodzic zablokował tę aplikację. Wykonaj zadania albo poproś o odblokowanie.', 'blocked');
+    if (r.lim[a[0]] != null && usedOf(a) >= r.lim[a[0]] + r.bonus) return blocked(a, 'Dzienny limit czasu w tej aplikacji się skończył. Możesz poprosić rodzica o więcej czasu.', 'limit');
+    run(a);
+  }
+  function blocked(a, msg, reason) { stop(); $('blkT').textContent = a[1]; $('blkM').textContent = msg; $('blkReq').dataset.r = reason; $('blkReq').disabled = false; $('blkReq').textContent = 'Poproś o więcej czasu'; show('blk', true); cur = a; }
+  function run(a) {
+    stop(); show('run', true); $('runI').textContent = a[2]; $('runT').textContent = a[1];
+    const upd = () => { const r = rules(), lim = r.lim[a[0]], u = usedOf(a); if (lim != null) { const left = lim + r.bonus - u; $('runM').textContent = left > 0 ? 'Zostało ' + left + ' min z dziennego limitu' + (left <= 5 ? ' – za chwilę koniec!' : '') : ''; $('runB').style.width = Math.min(100, u / (lim + r.bonus) * 100) + '%'; if (left <= 0) { stop(); show('run', false); blocked(a, 'Dzienny limit czasu w tej aplikacji się skończył. Możesz poprosić rodzica o więcej czasu.', 'limit'); } } else { $('runM').textContent = 'Bez limitu czasu'; $('runB').style.width = '12%'; } };
+    upd(); tick = setInterval(() => { used[a[0]] = usedOf(a) + 1; bump(a); upd(); }, 1000);
+  }
+  function bump(a) { const s = st('sensor.aurora_guard_' + kid + '_usage'), apps = (s.attributes.apps || []).map((x) => Object.assign({}, x)); let e = apps.find((x) => x.n === a[1]); if (!e) { e = {p: a[0], n: a[1], m: 0}; apps.push(e); } e.m += 1; apps.sort((x, y) => y.m - x.m); const days = (s.attributes.days || []).map((x) => Object.assign({}, x)), t = days[days.length - 1]; if (t) { t.t = (t.t || 0) + 1; const d = (t.a || []).find((x) => x.n === a[1]); if (d) d.m += 1; else t.a = (t.a || []).concat([{n: a[1], m: 1}]); } D.set('sensor.aurora_guard_' + kid + '_usage', n('sensor.aurora_guard_' + kid + '_usage') + 1, {apps, days, week: days.slice(-7).map((x) => x.t)}); }
+  function stop() { if (tick) { clearInterval(tick); tick = null; } show('run', false); }
+  function fullScreen() { stop(); const al = items('todo.guard_' + kid + '_dozwolone'); $('fullA').innerHTML = ''; [['Telefon', '📞'], ['Wiadomości', '✉️'], ['Kontakty', '👤']].concat(al.map((x) => [x[1] || x[0], '📘'])).forEach((x) => { const b = document.createElement('button'); b.className = 'btn sec'; b.textContent = x[1] + ' ' + x[0]; b.onclick = () => toast('Dozwolona aplikacja: ' + x[0]); $('fullA').appendChild(b); }); $('fullReq').textContent = 'Poproś o więcej czasu'; $('fullReq').disabled = false; show('full', true); }
+  $('blkOk').onclick = () => { show('blk', false); };
+  $('blkReq').onclick = () => { request(cur, $('blkReq').dataset.r || 'blocked'); $('blkReq').textContent = 'Wysłano prośbę ✔'; $('blkReq').disabled = true; };
+  $('fullReq').onclick = () => { request(null, 'full'); $('fullReq').textContent = 'Wysłano prośbę ✔'; $('fullReq').disabled = true; };
+  $('runX').onclick = stop; $('msgOk').onclick = () => show('msg', false); $('ringOk').onclick = () => show('ring', false);
+  function react() {
+    const r = rules(); show('full', r.full); if (r.full) fullScreen();
+    if (!r.full && $('blk').classList.contains('on') && cur) { const a = cur; if (!(r.lock && r.blk[a[0]]) && !(r.lim[a[0]] != null && usedOf(a) >= r.lim[a[0]] + r.bonus)) { show('blk', false); toast('Rodzic odblokował – możesz używać ' + a[1]); } }
+    const m = st('input_text.guard_wiadomosc_' + kid).state; if (m && m !== lastMsg) { lastMsg = m; $('msgT').textContent = m.split('|').slice(1).join('|'); show('msg', true); }
+    const b = st('input_button.guard_dzwon_' + kid).state; if (b && b !== 'unknown' && b !== lastRing) { lastRing = b; show('ring', true); }
+  }
+  D.onHass(react); setTimeout(() => { lastMsg = st('input_text.guard_wiadomosc_' + kid).state; lastRing = st('input_button.guard_dzwon_' + kid).state; react(); }, 100);
+  const lk = () => { const r = rules(); $('nt').textContent = r.full ? 'Cały telefon zablokowany' : r.lock ? 'Blokada aplikacji włączona' : 'Blokada aplikacji wyłączona'; }; D.onHass(lk); lk();
+  window.addEventListener('message', (e) => { if (e.data && e.data.fullLock !== undefined) D.call('input_boolean', e.data.fullLock ? 'turn_on' : 'turn_off', {entity_id: 'input_boolean.blokada_telefon_' + kid + '_caly'}); });
+})();
+</script></body></html>

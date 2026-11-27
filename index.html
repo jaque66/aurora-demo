@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aurora – interaktywne demo</title>
+<meta name="description" content="Interaktywne demo projektu Aurora: dashboard Aurora Pulse dla Home Assistanta, widoki dzieci i aplikacja Aurora Guard. Dane przykładowe.">
+<style>
+  :root { --bg: #070b18; --card: rgba(255,255,255,.06); --line: rgba(255,255,255,.12); --ink: #eaf1ff; --ink2: #9fb0d0; --a: #00e5ff; --b: #b36bff; --c: #ff5fb0; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; color: var(--ink); font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif; background: radial-gradient(900px 600px at 10% -10%, rgba(120,70,255,.35), transparent 60%), radial-gradient(800px 600px at 100% 0%, rgba(0,200,255,.22), transparent 55%), var(--bg); min-height: 100vh; }
+  a { color: var(--a); }
+  header { max-width: 1240px; margin: 0 auto; padding: 34px 20px 10px; }
+  h1 { margin: 0; font-size: clamp(30px, 5vw, 52px); font-weight: 200; letter-spacing: .02em; background: linear-gradient(90deg, var(--a), var(--b), var(--c)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  header p { margin: 8px 0 0; color: var(--ink2); max-width: 760px; }
+  .warn { margin-top: 12px; display: inline-block; padding: 6px 12px; border-radius: 99px; background: rgba(255,200,80,.12); border: 1px solid rgba(255,200,80,.4); color: #ffd890; font-size: 13px; }
+  nav { max-width: 100%; margin: 18px 0 0; padding: 10px max(20px, calc((100% - 1240px) / 2 + 20px)); background: linear-gradient(180deg, rgba(7,11,24,.96), rgba(7,11,24,.82)); display: flex; gap: 8px; flex-wrap: wrap; position: sticky; top: 0; z-index: 5; }
+  nav button { padding: 10px 18px; border-radius: 99px; border: 1px solid var(--line); background: rgba(10,14,30,.8); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; backdrop-filter: blur(10px); }
+  nav button.on { background: linear-gradient(90deg, rgba(0,229,255,.28), rgba(179,107,255,.28)); border-color: rgba(0,229,255,.7); }
+  main { max-width: 1240px; margin: 0 auto; padding: 18px 20px 60px; }
+  section { display: none; } section.on { display: block; animation: fin .3s; } @keyframes fin { from { opacity: 0; transform: translateY(8px); } }
+  .lead { color: var(--ink2); margin: 0 0 14px; max-width: 820px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; } .chips button { padding: 7px 13px; border-radius: 99px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; } .chips button.on { border-color: var(--a); background: rgba(0,229,255,.16); }
+  .dev { position: relative; border-radius: 22px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0,0,0,.55); background: #0b1020; } .dev iframe { border: 0; display: block; transform-origin: 0 0; background: #0b1020; }
+  .phone { border-radius: 38px; padding: 12px; background: linear-gradient(145deg, #2a2f48, #0d1124); border: 1px solid rgba(255,255,255,.2); box-shadow: 0 30px 80px rgba(0,0,0,.6); display: inline-block; } .phone .scr { border-radius: 28px; overflow: hidden; width: 390px; height: 780px; background: #070a16; } .phone iframe { border: 0; width: 100%; height: 100%; display: block; }
+  .row { display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+  .side { flex: 1 1 280px; max-width: 460px; } .side h3 { margin: 0 0 8px; font-weight: 500; } .side ol, .side ul { padding-left: 20px; color: var(--ink2); margin: 0 0 12px; } .side li { margin: 5px 0; } .side b { color: var(--ink); font-weight: 500; }
+  .tip { padding: 10px 14px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); font-size: 14px; color: var(--ink2); margin: 10px 0; }
+  .btn { padding: 9px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: inherit; cursor: pointer; margin: 0 6px 6px 0; } .btn:hover { border-color: var(--a); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin: 14px 0; } .card { padding: 16px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); } .card h4 { margin: 0 0 6px; font-weight: 500; } .card p { margin: 0; color: var(--ink2); font-size: 14px; }
+  footer { max-width: 1240px; margin: 0 auto; padding: 0 20px 40px; color: var(--ink2); font-size: 13px; }
+  @media (max-width: 470px) { .phone { zoom: .86; } }
+  .lab { text-align: center; color: var(--ink2); font-size: 13px; margin: 8px 0 0; }
+</style></head>
+<body>
+<header>
+  <h1>Aurora</h1>
+  <p>Interaktywne demo: dashboard <b>Aurora Pulse</b> dla Home Assistanta, widoki dla dzieci z akceptacją zadań i aplikacja rodzicielska <b>Aurora Guard</b>. Wszystko działa na sztucznym domu – możesz klikać, przełączać światła, motywy i sprawdzić, jak reaguje telefon dziecka.</p>
+  <span class="warn">Dane przykładowe – wymyślona rodzina (Ola i Kuba), wymyślone urządzenia. Nic nie łączy się z prawdziwym domem.</span>
+</header>
+<nav id="tabs">
+  <button data-t="tablet" class="on">Pulse · tablet</button><button data-t="phone">Pulse · telefon</button><button data-t="guard">Aurora Guard</button><button data-t="kids">Dla dzieci</button><button data-t="about">O projekcie</button>
+</nav>
+<main>
+  <section id="sec-tablet" class="on">
+    <p class="lead">Ekran główny dla tabletu na ścianie: zegar, pogoda, <b>Puls domu</b> (animowany pierścień ze statusem i kategoriami), pokoje z temperaturą i obecnością, światła, wydarzenia i szkoła. Dotknij kafelka, pokoju, pierścienia albo ikon w pasku po lewej.</p>
+    <div class="chips" data-for="f-tablet" id="th-tablet"></div>
+    <div class="dev" data-w="1180" data-h="740"><iframe id="f-tablet" data-src="frame.html?v=pulse" width="1180" height="740" title="Aurora Pulse – tablet"></iframe></div>
+    <p class="tip">Wskazówka: dotknij pierścienia w środku, aby zobaczyć szczegóły kategorii; ikony w pasku po lewej otwierają widoki (pogoda, klimat, kalendarz, zadania, Aurora Guard).</p>
+  </section>
+
+  <section id="sec-phone">
+    <div class="row">
+      <div style="text-align:center"><div class="phone"><div class="scr"><iframe id="f-phone" data-src="frame.html?v=pulse" title="Aurora Pulse – telefon"></iframe></div></div><div class="lab">Aurora Pulse na telefonie</div></div>
+      <div class="side">
+        <h3>Ten sam dashboard na telefonie</h3>
+        <p class="lead">Układ dopasowuje się do ekranu. Wybierz motyw – zmienia się cały wygląd, animacje i pierścień Pulsu.</p>
+        <div class="chips" data-for="f-phone" id="th-phone"></div>
+        <ul><li><b>Puls domu</b>: wstęga co jakiś czas zamienia się w znak statusu (tarcza z ptaszkiem lub wykrzyknikiem).</li><li><b>Motywy</b>: Matrix, Jarvis, Vice City, pory roku, kosmos, hologram, strumienie i <b>Tech 3D</b> (tylko telefon, reaguje na przechył).</li><li><b>Dock</b> na dole i menu „Więcej” są konfigurowalne.</li></ul>
+        <p class="tip">Na prawdziwym telefonie motyw Tech 3D porusza tłem i kafelkami, gdy przechylasz urządzenie.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-guard">
+    <p class="lead">Aurora Guard to aplikacja na telefon dziecka (blokady aplikacji, limity czasu, lokalizacja) sterowana z Home Assistanta. Po lewej widok rodzica w Pulse, po prawej symulacja telefonu dziecka. Obie strony są ze sobą połączone.</p>
+    <div class="row">
+      <div style="text-align:center"><div class="dev" data-w="760" data-h="780"><iframe id="f-guard" data-src="frame.html?v=pulse&open=guard" width="760" height="780" title="Aurora Guard – widok rodzica"></iframe></div><div class="lab">Rodzic: Pulse → Aurora Guard</div></div>
+      <div style="text-align:center"><div class="phone"><div class="scr"><iframe id="f-kidphone" data-src="phone.html?kid=ola" title="Telefon dziecka"></iframe></div></div><div class="lab">Telefon Oli</div></div>
+    </div>
+    <div class="row" style="margin-top:18px"><div class="side" style="max-width:900px">
+      <h3>Co wypróbować</h3>
+      <ol>
+        <li>Na telefonie Oli dotknij <b>GameZone</b> – działa, ale ma limit 60 min dziennie (1 s w demo = 1 min). Gdy limit się skończy, pojawi się blokada.</li>
+        <li>Dotknij <b>Poproś o więcej czasu</b> – po stronie rodzica pojawi się prośba z przyciskami <b>+15 min / +30 min / Odmów</b>.</li>
+        <li>W widoku rodzica: rozwiń <b>Czas, limity i bezpieczeństwo</b> → statystyki dnia, cofanie się w historii, limity, bonus, <b>Znajdź telefon</b>, <b>Wiadomość na ekran</b>.</li>
+        <li>Rozwiń <b>Telefony dzieci</b> i włącz <b>Cały telefon</b> – telefon dziecka zablokuje się i zostawi tylko telefon, SMS i kontakty.</li>
+        <li>Zobacz <b>Lokalizację telefonów</b> (współrzędne w demo są przykładowe).</li>
+      </ol>
+      <button class="btn" onclick="document.getElementById('f-kidphone').contentWindow.postMessage({fullLock:true},'*')">Zablokuj cały telefon Oli</button><button class="btn" onclick="document.getElementById('f-kidphone').contentWindow.postMessage({fullLock:false},'*')">Odblokuj</button>
+    </div></div>
+  </section>
+
+  <section id="sec-kids">
+    <p class="lead">Dashboardy dzieci w stylu dopasowanym do dziecka: zadania z akceptacją rodzica, pokój (światła z kolorami i jasnością), pogoda, czujnik obecności. Dziecko zaznacza zadanie – ono czeka na akceptację. Rodzic zatwierdza w Pulse i może przyznać bonusowy czas.</p>
+    <div class="row">
+      <div style="text-align:center"><div class="phone"><div class="scr"><iframe id="f-ola" data-src="frame.html?v=ola&user=Ola" title="Dashboard Oli"></iframe></div></div><div class="lab">Ola (motyw jednorożec)</div></div>
+      <div style="text-align:center"><div class="phone"><div class="scr"><iframe id="f-kuba" data-src="frame.html?v=kuba&user=Kuba" title="Dashboard Kuby"></iframe></div></div><div class="lab">Kuba (motyw gamingowy)</div></div>
+      <div class="side">
+        <h3>Spróbuj</h3>
+        <ol><li>W widoku Oli dotknij zadania – dostanie status <b>czeka na akceptację</b>.</li><li>Poniżej, w widoku rodzica, otwórz <b>Zadania</b> i <b>zaakceptuj</b> albo odrzuć – dziecko widzi zmianę od razu.</li><li>Dotknij ikony palety przy lampie, aby zmienić <b>kolor i jasność</b>.</li></ol>
+        <div class="dev" data-w="520" data-h="560"><iframe id="f-parent" data-src="frame.html?v=pulse&open=zadania" width="520" height="560" title="Zadania – widok rodzica"></iframe></div><div class="lab">Rodzic: Pulse → Zadania</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-about">
+    <div class="grid">
+      <div class="card"><h4>Aurora Pulse</h4><p>Karta dashboardu Home Assistanta: Puls domu, pokoje, światła, kalendarz, pogoda, klimat, powietrze, szkoła, zadania, motywy i animacje.</p></div>
+      <div class="card"><h4>Aurora Manager</h4><p>Dodatek do Home Assistanta, w którym konfigurujesz dashboard (pokoje, encje, ekran główny, dock, motywy) bez pisania YAML-a. <a href="https://github.com/jaque66/dashboard-aurora-manager">Repozytorium</a></p></div>
+      <div class="card"><h4>Aurora Guard</h4><p>Aplikacja Android dla rodziców: blokady aplikacji i telefonu, limity czasu, prośby o czas, lokalizacja, tryb nocny. Jawna dla dziecka, bez telemetrii. <a href="https://github.com/jaque66/aurora-guard">Repozytorium</a></p></div>
+      <div class="card"><h4>Widoki dzieci</h4><p>Osobne dashboardy z akceptacją zadań przez rodzica, motywami (jednorożec, gamingowy) i sterowaniem lampami.</p></div>
+    </div>
+    <h3>Jak działa to demo</h3>
+    <p class="lead">To prawdziwe karty z projektu, uruchomione na sztucznym obiekcie „hass” (stany, usługi, kalendarz, prognoza, zadania) wyłącznie w przeglądarce. Nic nie jest wysyłane na zewnątrz. Ikony pochodzą z Material Design Icons. Kod demo i karty są dostępne w tym repozytorium.</p>
+  </section>
+</main>
+<footer>Demo prezentuje funkcje projektu; w prawdziwej instalacji karty działają w Home Assistancie z Twoimi urządzeniami.</footer>
+<script>
+(function () {
+  var TH = [['', 'Standardowy'], ['matrix', 'Matrix'], ['jarvis', 'Jarvis'], ['vice', 'Vice City'], ['holo', 'Hologram'], ['ribbon', 'Strumienie'], ['winter', 'Zima'], ['space', 'Kosmos'], ['aurora', 'Zorza'], ['tech3d', 'Tech 3D']];
+  function chips(id, noMob) { var el = document.getElementById(id); TH.forEach(function (t) { if (noMob && t[0] === 'tech3d') return; var b = document.createElement('button'); b.textContent = t[1]; if (!t[0]) b.className = 'on'; b.onclick = function () { el.querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); }); b.classList.add('on'); document.getElementById(el.dataset.for).contentWindow.postMessage({theme: t[0]}, '*'); }; el.appendChild(b); }); }
+  chips('th-tablet', true); chips('th-phone', false);
+  function fit() { document.querySelectorAll('.dev').forEach(function (d) { var w = +d.dataset.w, h = +d.dataset.h, av = Math.min(w, window.innerWidth - 40), sc = Math.min(1, av / w), f = d.querySelector('iframe'); f.style.transform = 'scale(' + sc + ')'; d.style.width = Math.round(w * sc) + 'px'; d.style.height = Math.round(h * sc) + 'px'; }); }
+  function load(sec) { sec.querySelectorAll('iframe[data-src]').forEach(function (f) { f.src = f.dataset.src; f.removeAttribute('data-src'); }); setTimeout(fit, 50); }
+  var tabs = document.getElementById('tabs');
+  function show(t) { tabs.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.t === t); }); document.querySelectorAll('section').forEach(function (s) { s.classList.toggle('on', s.id === 'sec-' + t); }); load(document.getElementById('sec-' + t)); history.replaceState(null, '', '#' + t); }
+  tabs.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) show(b.dataset.t); });
+  window.addEventListener('resize', fit);
+  show((location.hash || '#tablet').slice(1) in {tablet: 1, phone: 1, guard: 1, kids: 1, about: 1} ? location.hash.slice(1) : 'tablet');
+})();
+</script></body></html>
