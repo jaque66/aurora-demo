@@ -7,6 +7,7 @@
 ## Co zobaczysz / What you can try
 - **Pulse · tablet / telefon** – ekran główny, Puls domu (wstęga zamieniająca się w znak statusu), pokoje, światła, kalendarz, pogoda, klimat, zadania; ~10 motywów (Matrix, Jarvis, Vice City, Hologram, Strumienie, **Tech 3D**…).
 - **Aurora Guard** – widok rodzica (blokady, limity czasu, statystyki z historią, lokalizacja, „znajdź telefon”, wiadomość na ekran) połączony z symulowanym telefonem dziecka: prośba o więcej czasu → akceptacja w Pulse.
+- **Manager i moduły** – dashboard podstawowy oraz moduły opcjonalne (Zadania, Aurora Guard, Formuła 1, Radio, Program TV) z notatkami o wymaganiach; zaznaczenie modułu zmienia menu „Więcej” w podglądzie.
 - **Dla dzieci** – dashboardy Oli (jednorożec) i Kuby (gamingowy): zadania czekające na akceptację, kolor i jasność lamp, pogoda, czujnik obecności.
 
 ## Uruchomienie / Run

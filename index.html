@@ -37,7 +37,7 @@
   <span class="warn">Dane przykładowe – wymyślona rodzina (Ola i Kuba), wymyślone urządzenia. Nic nie łączy się z prawdziwym domem.</span>
 </header>
 <nav id="tabs">
-  <button data-t="tablet" class="on">Pulse · tablet</button><button data-t="phone">Pulse · telefon</button><button data-t="guard">Aurora Guard</button><button data-t="kids">Dla dzieci</button><button data-t="about">O projekcie</button>
+  <button data-t="tablet" class="on">Pulse · tablet</button><button data-t="phone">Pulse · telefon</button><button data-t="guard">Aurora Guard</button><button data-t="modules">Manager i moduły</button><button data-t="kids">Dla dzieci</button><button data-t="about">O projekcie</button>
 </nav>
 <main>
   <section id="sec-tablet" class="on">
@@ -79,6 +79,12 @@
     </div></div>
   </section>
 
+  <section id="sec-modules">
+    <p class="lead">Aurora Manager tworzy <b>podstawowy dashboard</b> (pokoje, światła, klimat, pogoda, kalendarz, baterie, multimedia) bez dodatkowych integracji. Moduły opcjonalne wybierasz w kreatorze – przy każdym jest notatka, czego wymaga. Zaznacz moduł, aby zobaczyć, jak zmienia dashboard (menu „Więcej”).</p>
+    <div class="grid" id="modlist"></div>
+    <div class="dev" data-w="1180" data-h="740"><iframe id="f-modules" data-src="frame.html?v=modules" width="1180" height="740" title="Aurora Pulse – moduły"></iframe></div>
+    <p class="tip">Wskazówka: otwórz menu „Więcej” (ikona z kropkami w pasku po lewej), aby zobaczyć widoki włączonych modułów. Radio, Program TV i Formuła 1 wymagają zewnętrznych integracji, których demo nie zawiera – w prawdziwej instalacji Manager wykrywa je i pokazuje, czy są dostępne.</p>
+  </section>
   <section id="sec-kids">
     <p class="lead">Dashboardy dzieci w stylu dopasowanym do dziecka: zadania z akceptacją rodzica, pokój (światła z kolorami i jasnością), pogoda, czujnik obecności. Dziecko zaznacza zadanie – ono czeka na akceptację. Rodzic zatwierdza w Pulse i może przyznać bonusowy czas.</p>
     <div class="row">
@@ -95,7 +101,7 @@
   <section id="sec-about">
     <div class="grid">
       <div class="card"><h4>Aurora Pulse</h4><p>Karta dashboardu Home Assistanta: Puls domu, pokoje, światła, kalendarz, pogoda, klimat, powietrze, szkoła, zadania, motywy i animacje.</p></div>
-      <div class="card"><h4>Aurora Manager</h4><p>Dodatek do Home Assistanta, w którym konfigurujesz dashboard (pokoje, encje, ekran główny, dock, motywy) bez pisania YAML-a. <a href="https://github.com/jaque66/dashboard-aurora-manager">Repozytorium</a></p></div>
+      <div class="card"><h4>Aurora Manager</h4><p>Dodatek do Home Assistanta, w którym konfigurujesz dashboard (pokoje, encje, ekran główny, dock, motywy, moduły opcjonalne) bez pisania YAML-a. <a href="https://github.com/jaque66/dashboard-aurora-manager">Repozytorium</a></p></div>
       <div class="card"><h4>Aurora Guard</h4><p>Aplikacja Android dla rodziców: blokady aplikacji i telefonu, limity czasu, prośby o czas, lokalizacja, tryb nocny. Jawna dla dziecka, bez telemetrii. <a href="https://github.com/jaque66/aurora-guard">Repozytorium</a></p></div>
       <div class="card"><h4>Widoki dzieci</h4><p>Osobne dashboardy z akceptacją zadań przez rodzica, motywami (jednorożec, gamingowy) i sterowaniem lampami.</p></div>
     </div>
@@ -108,6 +114,21 @@
 (function () {
   var TH = [['', 'Standardowy'], ['matrix', 'Matrix'], ['jarvis', 'Jarvis'], ['vice', 'Vice City'], ['holo', 'Hologram'], ['ribbon', 'Strumienie'], ['winter', 'Zima'], ['space', 'Kosmos'], ['aurora', 'Zorza'], ['tech3d', 'Tech 3D']];
   function chips(id, noMob) { var el = document.getElementById(id); TH.forEach(function (t) { if (noMob && t[0] === 'tech3d') return; var b = document.createElement('button'); b.textContent = t[1]; if (!t[0]) b.className = 'on'; b.onclick = function () { el.querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); }); b.classList.add('on'); document.getElementById(el.dataset.for).contentWindow.postMessage({theme: t[0]}, '*'); }; el.appendChild(b); }); }
+  var MODS = [
+    ['zadania', 'Zadania', true, 'Wymaga list zadań (Local To-do) o nazwach todo.zadania_&lt;dziecko&gt;.'],
+    ['guard', 'Aurora Guard', true, 'Wymaga aplikacji Android Aurora Guard na telefonie dziecka oraz konfiguracji w Home Assistant: helpery, szablony webhooka i listy todo z repozytorium aplikacji (katalog homeassistant/).'],
+    ['f1', 'Formuła 1', false, 'Wymaga integracji „F1 Sensor” (HACS). W demo niedostępne.'],
+    ['radio', 'Radio', false, 'Wymaga integracji „Radio PL” i karty radio-pl-card oraz odtwarzaczy. W demo niedostępne.'],
+    ['tv', 'Program TV', false, 'Wymaga integracji „TV Guide”, karty tv-guide i pliku z listą kanałów. W demo niedostępne.']];
+  (function () {
+    var box = document.getElementById('modlist'), on = {};
+    MODS.forEach(function (m) {
+      var c = document.createElement('div'); c.className = 'card';
+      c.innerHTML = '<h4><label><input type="checkbox" ' + (m[2] ? '' : 'disabled') + '> ' + m[1] + '</label></h4><p>ℹ ' + m[3] + '</p>';
+      c.querySelector('input').onchange = function (e) { on[m[0]] = e.target.checked; document.getElementById('f-modules').contentWindow.postMessage({modules: Object.keys(on).filter(function (k) { return on[k]; })}, '*'); };
+      box.appendChild(c);
+    });
+  })();
   chips('th-tablet', true); chips('th-phone', false);
   function fit() { document.querySelectorAll('.dev').forEach(function (d) { var w = +d.dataset.w, h = +d.dataset.h, av = Math.min(w, window.innerWidth - 40), sc = Math.min(1, av / w), f = d.querySelector('iframe'); f.style.transform = 'scale(' + sc + ')'; d.style.width = Math.round(w * sc) + 'px'; d.style.height = Math.round(h * sc) + 'px'; }); }
   function load(sec) { sec.querySelectorAll('iframe[data-src]').forEach(function (f) { f.src = f.dataset.src; f.removeAttribute('data-src'); }); setTimeout(fit, 50); }
@@ -115,6 +136,6 @@
   function show(t) { tabs.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.t === t); }); document.querySelectorAll('section').forEach(function (s) { s.classList.toggle('on', s.id === 'sec-' + t); }); load(document.getElementById('sec-' + t)); history.replaceState(null, '', '#' + t); }
   tabs.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) show(b.dataset.t); });
   window.addEventListener('resize', fit);
-  show((location.hash || '#tablet').slice(1) in {tablet: 1, phone: 1, guard: 1, kids: 1, about: 1} ? location.hash.slice(1) : 'tablet');
+  show((location.hash || '#tablet').slice(1) in {tablet: 1, phone: 1, guard: 1, modules: 1, kids: 1, about: 1} ? location.hash.slice(1) : 'tablet');
 })();
 </script></body></html>

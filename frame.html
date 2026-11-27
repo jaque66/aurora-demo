@@ -17,28 +17,41 @@
 <script src="js/mdi-bundle.js"></script>
 <script src="js/demo-hass.js"></script>
 <script src="js/demo-config.js"></script>
-<script type="module" src="assets/pastel-home-card.js"></script>
 <script type="module" src="assets/aurora-pulse-card.js"></script>
 <script type="module" src="assets/aurora-kid-card.js"></script>
 <script type="module">
 (function () {
   const q = new URLSearchParams(location.search), v = q.get('v') || 'pulse';
   if (q.get('user')) AuroraDemo.setUser({name: q.get('user'), is_admin: false});
-  const tag = v === 'pulse' ? 'aurora-pulse-card' : 'aurora-kid-card';
+  const isPulse = v === 'pulse' || v === 'modules', tag = isPulse ? 'aurora-pulse-card' : 'aurora-kid-card';
   const B = document.getElementById('boot'), P = (t) => { if (B) B.textContent = t; };
   P('1 tworze ' + tag + ' zdefiniowany=' + !!customElements.get(tag) + ' AuroraDemo=' + !!window.AuroraDemo + ' CFG=' + !!window.DEMO_CFG);
-  const el = document.createElement(tag);
-  const cfg = v === 'pulse' ? {type: 'custom:aurora-pulse-card', empty: true, cfg: DEMO_CFG} : DEMO_KIDS[v];
-  P('2 setConfig'); el.setConfig(cfg); P('3 po setConfig');
-  document.getElementById('boot').remove(); document.body.appendChild(el);
-  P('4 hass'); el.hass = AuroraDemo.hass(); P('5 po hass');
-  AuroraDemo.onHass((h) => { el.hass = h; });
-  if (v === 'pulse' && q.get('open')) setTimeout(() => { try { el._pOpen(q.get('open')); } catch (e) { /* ignore */ } }, 900);
+  /* Manager: dashboard podstawowy + moduly opcjonalne (tryb v=modules) */
+  const MODV = {zadania: ['zadania'], f1: ['f1'], radio: ['radio'], tv: ['tv']};
+  const baseNav = () => ({dock: ['lights', 'events'], tdock: ['rooms', 'klimat', 'multimedia', 'events', 'pogoda', 'powietrze'], menu: ['kalendarz', 'pogoda', 'klimat', 'powietrze', 'baterie', 'multimedia', 'szkola']});
+  const buildCfg = (mods) => {
+    const c = JSON.parse(JSON.stringify(DEMO_CFG)), nav = baseNav();
+    c.f1 = {on: mods.indexOf('f1') >= 0}; if (mods.indexOf('guard') < 0) c.guard = [];
+    mods.forEach((m) => (MODV[m] || []).forEach((x) => nav.menu.push(x)));
+    return {type: 'custom:aurora-pulse-card', empty: true, cfg: c, nav: nav};
+  };
+  let mods = (q.get('modules') || '').split(',').filter(Boolean), el = null;
+  const make = () => {
+    if (el) el.remove();
+    el = document.createElement(tag);
+    const cfg = v === 'modules' ? buildCfg(mods) : v === 'pulse' ? {type: 'custom:aurora-pulse-card', empty: true, cfg: DEMO_CFG} : DEMO_KIDS[v];
+    P('2 setConfig'); el.setConfig(cfg); P('3 po setConfig');
+    const b = document.getElementById('boot'); if (b) b.remove(); document.body.appendChild(el);
+    P('4 hass'); el.hass = AuroraDemo.hass(); P('5 po hass'); window.card = el;
+  };
+  make();
+  AuroraDemo.onHass((h) => { if (el) el.hass = h; });
+  if (isPulse && q.get('open')) setTimeout(() => { try { el._pOpen(q.get('open')); } catch (e) { /* ignore */ } }, 900);
   window.addEventListener('message', (e) => {
     const d = e.data || {};
-    if (d.theme !== undefined && el._pRender) { try { if (d.theme) localStorage.setItem('pulse_theme', d.theme); else localStorage.removeItem('pulse_theme'); el._fxK = ''; el._pRender(); el._pVRender(true); } catch (x) { /* ignore */ } }
-    if (d.open && el._pOpen) { try { el._pOpen(d.open); } catch (x) { /* ignore */ } }
+    if (d.modules && v === 'modules') { mods = d.modules; make(); return; }
+    if (d.theme !== undefined && el && el._pRender) { try { if (d.theme) localStorage.setItem('pulse_theme', d.theme); else localStorage.removeItem('pulse_theme'); el._fxK = ''; el._pRender(); el._pVRender(true); } catch (x) { /* ignore */ } }
+    if (d.open && el && el._pOpen) { try { el._pOpen(d.open); } catch (x) { /* ignore */ } }
   });
-  window.card = el;
 })();
 </script></body></html>
